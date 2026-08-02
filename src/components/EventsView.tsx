@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, Database, Edit2, Trash2, FileText, ChevronDown, ChevronRight, Layers, X, Search } from 'lucide-react';
 import { AppEvent, Advice, User, CombinedAdviceEvent } from '../types';
+import { MediaPreview } from './MediaPreview';
 
 interface EventsViewProps {
   events: AppEvent[];
@@ -202,11 +203,18 @@ export const EventsView: React.FC<EventsViewProps> = ({
                           <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
                             Advice #{item.adviceID}
                           </span>
-                          <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                            📎 {item.adviceFilename}
-                          </span>
                         </div>
-                        <p className="text-sm font-semibold text-slate-800 line-clamp-1">{item.adviceDescription}</p>
+                        <p className="text-sm font-semibold text-slate-800 line-clamp-1 mb-2">{item.adviceDescription}</p>
+                        {item.adviceFilename && (
+                          <div className="mt-2">
+                            <MediaPreview
+                              urlOrFilename={item.adviceFilename}
+                              title={`Advice #${item.adviceID}: ${item.adviceDescription}`}
+                              label="Advice Document"
+                              compact={true}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -253,19 +261,26 @@ export const EventsView: React.FC<EventsViewProps> = ({
 
                                 <p className="text-xs font-medium text-slate-800 mb-3">{ev.eventDescription}</p>
 
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                                  <span className="font-mono truncate max-w-[150px]">📎 {ev.eventFilename}</span>
+                                <div className="space-y-2 pt-2 border-t border-slate-100">
+                                  <MediaPreview
+                                    urlOrFilename={ev.eventFilename}
+                                    title={`Nested Event #${ev.eventID}: ${ev.eventDescription}`}
+                                    label="Event Attachment"
+                                  />
+
                                   {fullEv && (
-                                    <div className="flex items-center space-x-1">
+                                    <div className="flex items-center justify-end space-x-1 pt-1">
                                       <button
                                         onClick={() => handleOpenEditModal(fullEv)}
-                                        className="p-1 text-slate-400 hover:text-emerald-600 rounded"
+                                        className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                        title="Edit Event"
                                       >
                                         <Edit2 className="w-3.5 h-3.5" />
                                       </button>
                                       <button
                                         onClick={() => handleDelete(ev.eventID)}
-                                        className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                        title="Delete Event"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
@@ -335,9 +350,11 @@ export const EventsView: React.FC<EventsViewProps> = ({
                     <span>Linked Advice: <strong>#{ev.adviceid}</strong></span>
                     <span>Date: <strong>{ev.eventDate}</strong></span>
                   </div>
-                  <div className="font-mono text-[11px] bg-slate-50 p-2 rounded-lg truncate">
-                    📎 {ev.eventFilename}
-                  </div>
+                  <MediaPreview
+                    urlOrFilename={ev.eventFilename}
+                    title={`Event #${ev.id}: ${ev.description}`}
+                    label="Event Attachment"
+                  />
                 </div>
               </div>
             ))}

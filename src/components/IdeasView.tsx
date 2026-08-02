@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lightbulb, Plus, Search, Edit2, Trash2, FileText, Calendar, X } from 'lucide-react';
 import { Idea } from '../types';
+import { MediaPreview } from './MediaPreview';
 
 interface IdeasViewProps {
   ideas: Idea[];
@@ -166,10 +167,11 @@ export const IdeasView: React.FC<IdeasViewProps> = ({ ideas, onRefresh }) => {
                 </span>
               </div>
 
-              <div className="flex items-center space-x-1.5 text-slate-500 bg-slate-50 p-2 rounded-lg font-mono text-[11px] truncate">
-                <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">{idea.ideaFilename}</span>
-              </div>
+              <MediaPreview
+                urlOrFilename={idea.ideaFilename}
+                title={`Idea #${idea.id}: ${idea.description}`}
+                label="Proposal Attachment"
+              />
             </div>
           </div>
         ))}

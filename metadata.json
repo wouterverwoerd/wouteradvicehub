@@ -1,6 +1,6 @@
 {
   "name": "Wouter Advice & Event Management Hub",
-  "description": "Advice, Ideas, Events, and User Management API & Interactive Dashboard based on wouteradvicenode.",
+  "description": "Advice, Ideas, Events, Jobs, WordPress Feed Reader, and User Management API & Interactive Dashboard based on wouteradvicenode.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -5,6 +5,7 @@ import { AdvicesView } from './components/AdvicesView';
 import { EventsView } from './components/EventsView';
 import { IdeasView } from './components/IdeasView';
 import { JobsView } from './components/JobsView';
+import { WordPressView } from './components/WordPressView';
 import { UsersView } from './components/UsersView';
 import { ApiExplorer } from './components/ApiExplorer';
 import { User, Advice, AppEvent, Idea, Job, CombinedAdviceEvent } from './types';
@@ -117,6 +118,8 @@ export default function App() {
             {activeTab === 'ideas' && <IdeasView ideas={ideas} onRefresh={fetchAllData} />}
 
             {activeTab === 'jobs' && <JobsView jobs={jobs} onRefresh={fetchAllData} />}
+
+            {activeTab === 'wordpress' && <WordPressView />}
 
             {activeTab === 'users' && <UsersView users={users} onRefresh={fetchAllData} />}
 

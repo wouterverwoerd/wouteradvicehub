@@ -104,3 +104,23 @@ export interface JobInput {
   company: string;
   url: string;
 }
+
+export interface WordPressPost {
+  id: string | number;
+  title: string;
+  link: string;
+  pubDate: string;
+  creator?: string;
+  content: string;
+  contentSnippet: string;
+  categories?: string[];
+  imageUrl?: string;
+}
+
+export interface WordPressFeedInfo {
+  title: string;
+  description: string;
+  link: string;
+  feedUrl: string;
+  posts: WordPressPost[];
+}

@@ -16,6 +16,7 @@ export const ApiExplorer: React.FC = () => {
     { label: 'GET All Events', method: 'GET', url: '/events', body: '' },
     { label: 'GET All Ideas', method: 'GET', url: '/ideas', body: '' },
     { label: 'GET All Jobs', method: 'GET', url: '/jobs', body: '' },
+    { label: 'GET WordPress Feed', method: 'GET', url: '/wordpress?url=https://woutertest123vw.wordpress.com/feed/', body: '' },
     { label: 'GET All Users', method: 'GET', url: '/users', body: '' },
     {
       label: 'POST Create Job Advert',

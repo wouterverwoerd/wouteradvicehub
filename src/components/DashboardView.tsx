@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Calendar, Lightbulb, Users, Briefcase, ArrowRight, Server, FileText, Database } from 'lucide-react';
+import { MessageSquare, Calendar, Lightbulb, Users, Briefcase, Globe, ArrowRight, Server, FileText, Database } from 'lucide-react';
 import { User, Advice, AppEvent, Idea, Job, CombinedAdviceEvent } from '../types';
 
 interface DashboardProps {
@@ -59,6 +59,15 @@ export const DashboardView: React.FC<DashboardProps> = ({
       description: 'Job advertisements & links',
     },
     {
+      title: 'WordPress Feed',
+      count: 'Live',
+      icon: Globe,
+      color: 'from-sky-500 to-blue-600',
+      bgColor: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
+      tab: 'wordpress',
+      description: 'woutertest123vw.wordpress.com',
+    },
+    {
       title: 'Registered Users',
       count: users.length,
       icon: Users,
@@ -75,6 +84,17 @@ export const DashboardView: React.FC<DashboardProps> = ({
       {/* Hero Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 border border-slate-800 shadow-xl">
         <div className="relative z-10 max-w-3xl">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold mb-4 border border-indigo-500/30">
+            <Server className="w-3.5 h-3.5" />
+            <span>wouteradvicenode REST API Engine</span>
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight text-white mb-2">
+            Welcome to Wouter Advice & Event Hub
+          </h2>
+          <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+            A full-stack Node.js Express platform supporting CRUD operations for Users, Advices, Events, Ideas,
+            and automated Combined relational queries linking Advices directly with Event timelines.
+          </p>
 
           <div className="flex flex-wrap gap-3">
             <button
@@ -92,6 +112,14 @@ export const DashboardView: React.FC<DashboardProps> = ({
             >
               <Database className="w-4 h-4 text-emerald-400" />
               <span>View Combined Events</span>
+            </button>
+            <button
+              id="dash-api-explorer"
+              onClick={() => setActiveTab('api-explorer')}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-all border border-slate-700"
+            >
+              <FileText className="w-4 h-4 text-amber-400" />
+              <span>Live API Documentation</span>
             </button>
           </div>
         </div>

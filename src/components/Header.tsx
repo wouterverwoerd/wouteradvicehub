@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lightbulb, MessageSquare, Calendar, Users, Briefcase, Terminal, LayoutDashboard, ShieldCheck, Database } from 'lucide-react';
+import { Lightbulb, MessageSquare, Calendar, Users, Briefcase, Globe, Terminal, LayoutDashboard, ShieldCheck, Database } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
@@ -22,7 +22,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     { id: 'events', label: 'Events & Combined', icon: Calendar },
     { id: 'ideas', label: 'Ideas', icon: Lightbulb },
     { id: 'jobs', label: 'Jobs', icon: Briefcase },
+    { id: 'wordpress', label: 'WordPress', icon: Globe },
     { id: 'users', label: 'User Directory', icon: Users },
+    { id: 'api-explorer', label: 'API Explorer', icon: Terminal },
   ];
 
   return (

@@ -1,13 +1,9 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-import dotenv from 'dotenv';
-
-dotenv.config();
-
 // Database configuration reading environment variables (supporting wouteradvicenode env naming)
-const dbHost = process.env.REACT_APP_API_HOST || process.env.DB_HOST || process.env.MYSQL_HOST || '';
+const dbHost = process.env.REACT_APP_API_HOST || process.env.DB_HOST || process.env.MYSQL_HOST || 'localhost';
 const dbPort = parseInt(process.env.REACT_APP_API_PORT || process.env.DB_PORT || '3306', 10);
-const dbUser = process.env.REACT_APP_API_USER || process.env.DB_USER || process.env.MYSQL_USER || '';
+const dbUser = process.env.REACT_APP_API_USER || process.env.DB_USER || process.env.MYSQL_USER || 'root';
 const dbPassword = process.env.REACT_APP_API_PASSWORD || process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD || '';
 const dbName = process.env.REACT_APP_API_DATABASE || process.env.DB_NAME || process.env.MYSQL_DATABASE || 'wouteradvicenode';
 const dbDialect = (process.env.REACT_APP_API_SEQUALIZE || process.env.DB_DIALECT || 'mysql') as any;

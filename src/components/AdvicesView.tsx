@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, Plus, Search, Edit2, Trash2, FileText, UserCheck, X } from 'lucide-react';
 import { Advice, User } from '../types';
+import { MediaPreview } from './MediaPreview';
 
 interface AdvicesViewProps {
   advices: Advice[];
@@ -177,10 +178,11 @@ export const AdvicesView: React.FC<AdvicesViewProps> = ({ advices, users, onRefr
                   <span>To: <strong>{recipient ? `${recipient.firstName} ${recipient.lastName}` : `ID ${advice.touserid}`}</strong></span>
                 </div>
 
-                <div className="flex items-center space-x-1.5 text-slate-500 bg-slate-50 p-2 rounded-lg font-mono text-[11px] truncate">
-                  <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{advice.filename}</span>
-                </div>
+                <MediaPreview
+                  urlOrFilename={advice.filename}
+                  title={`Advice #${advice.id}: ${advice.content}`}
+                  label="Document Attachment"
+                />
               </div>
             </div>
           );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Briefcase, Plus, Search, Edit2, Trash2, Calendar, Building, ExternalLink, X } from 'lucide-react';
 import { Job } from '../types';
+import { MediaPreview } from './MediaPreview';
 
 interface JobsViewProps {
   jobs: Job[];
@@ -175,17 +176,11 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <a
-                  href={job.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1 text-indigo-600 hover:text-indigo-800 font-semibold text-xs truncate max-w-full hover:underline"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{job.url}</span>
-                </a>
-              </div>
+              <MediaPreview
+                urlOrFilename={job.url}
+                title={`${job.jobTitle} - ${job.company}`}
+                label="Job Advert Link / Document"
+              />
             </div>
           </div>
         ))}
