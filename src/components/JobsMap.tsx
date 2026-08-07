@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Job } from '../types';
 import { MapPin, Globe, Compass, RefreshCw, Layers } from 'lucide-react';
 
@@ -144,8 +142,8 @@ function getCoordinatesForArea(areaName: string): [number, number] {
 
 export const JobsMap: React.FC<JobsMapProps> = ({ jobs, selectedArea, onSelectArea }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersLayerRef = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
   // Group jobs by normalized area name
@@ -161,17 +159,20 @@ export const JobsMap: React.FC<JobsMapProps> = ({ jobs, selectedArea, onSelectAr
     return groups;
   }, [jobs]);
 
-  // Initialize Leaflet map
-  useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return;
+  // Helper to ensure window.L is available
+  const initMap = () => {
+    const L = (window as any).L;
+    if (!L || !mapContainerRef.current || mapInstanceRef.current) return;
 
     // Fix leaflet default image paths
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
+    if (L.Icon && L.Icon.Default && L.Icon.Default.prototype) {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      });
+    }
 
     const map = L.map(mapContainerRef.current, {
       center: [-40.9006, 172.8860], // Focus directly on New Zealand
@@ -189,16 +190,53 @@ export const JobsMap: React.FC<JobsMapProps> = ({ jobs, selectedArea, onSelectAr
     markersLayerRef.current = markersGroup;
     mapInstanceRef.current = map;
     setMapLoaded(true);
+  };
+
+  // Initialize Leaflet map with dynamic script load fallback
+  useEffect(() => {
+    if ((window as any).L) {
+      initMap();
+      return;
+    }
+
+    // Dynamic Leaflet CSS fallback
+    if (!document.getElementById('leaflet-css-fallback')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css-fallback';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    // Dynamic Leaflet JS fallback
+    if (!document.getElementById('leaflet-js-fallback')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js-fallback';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => initMap();
+      document.head.appendChild(script);
+    } else {
+      const interval = setInterval(() => {
+        if ((window as any).L) {
+          clearInterval(interval);
+          initMap();
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
 
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
   }, []);
 
-  // Render job area markers whenever areaGroups or selectedArea changes
+  // Render job area markers whenever areaGroups, mapLoaded or selectedArea changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersLayerRef.current) return;
+    const L = (window as any).L;
+    if (!L || !mapInstanceRef.current || !markersLayerRef.current) return;
 
     const map = mapInstanceRef.current;
     const layer = markersLayerRef.current;
@@ -299,9 +337,9 @@ export const JobsMap: React.FC<JobsMapProps> = ({ jobs, selectedArea, onSelectAr
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6 });
     } else if (selectedArea) {
       const selectedCoords = getCoordinatesForArea(selectedArea);
-      map.setView(selectedCoords, 6, { animate: true });
+      map.setView(selectedCoords, 10, { animate: true });
     }
-  }, [areaGroups, selectedArea, onSelectArea]);
+  }, [areaGroups, selectedArea, mapLoaded, onSelectArea]);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
