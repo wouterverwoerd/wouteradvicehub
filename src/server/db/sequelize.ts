@@ -80,6 +80,7 @@ JobModel.init(
     advertDate: { type: DataTypes.STRING, allowNull: false },
     company: { type: DataTypes.STRING, allowNull: false },
     url: { type: DataTypes.STRING, allowNull: false },
+    area: { type: DataTypes.STRING, allowNull: true, defaultValue: 'Remote / Global' },
   },
   { sequelize, modelName: 'Job', tableName: 'jobs', timestamps: true }
 );

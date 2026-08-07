@@ -73,6 +73,7 @@ function createSchema(req: Request, res: Response, next: NextFunction) {
     advertDate: Joi.string().required(),
     company: Joi.string().required(),
     url: Joi.string().uri({ allowRelative: false }).required(),
+    area: Joi.string().allow('', null).default('Remote / Global'),
   });
   validateRequest(req, res, next, schema);
 }
@@ -83,6 +84,7 @@ function updateSchema(req: Request, res: Response, next: NextFunction) {
     advertDate: Joi.string().allow('', null),
     company: Joi.string().allow('', null),
     url: Joi.string().uri({ allowRelative: false }).allow('', null),
+    area: Joi.string().allow('', null),
   });
   validateRequest(req, res, next, schema);
 }

@@ -22,9 +22,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     { id: 'events', label: 'Events & Combined', icon: Calendar },
     { id: 'ideas', label: 'Ideas', icon: Lightbulb },
     { id: 'jobs', label: 'Jobs', icon: Briefcase },
-    { id: 'wordpress', label: 'WordPress', icon: Globe },
+    { id: 'blog', label: 'Blog', icon: Globe },
     { id: 'users', label: 'User Directory', icon: Users },
-    { id: 'api-explorer', label: 'API Explorer', icon: Terminal },
   ];
 
   return (
@@ -39,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               <h1 className="font-semibold text-lg leading-tight tracking-tight text-slate-100">
                 Wouter Advice Hub
               </h1>
-              <p className="text-xs text-slate-400">Node.js Express & MySQL Sequelize Engine</p>
+              <p className="text-xs text-slate-400"></p>
             </div>
           </div>
 

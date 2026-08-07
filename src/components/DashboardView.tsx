@@ -59,12 +59,12 @@ export const DashboardView: React.FC<DashboardProps> = ({
       description: 'Job advertisements & links',
     },
     {
-      title: 'WordPress Feed',
+      title: 'Blog Feed',
       count: 'Live',
       icon: Globe,
       color: 'from-sky-500 to-blue-600',
       bgColor: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
-      tab: 'wordpress',
+      tab: 'blog',
       description: 'woutertest123vw.wordpress.com',
     },
     {
@@ -89,37 +89,20 @@ export const DashboardView: React.FC<DashboardProps> = ({
             <span>wouteradvicenode REST API Engine</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-white mb-2">
-            Welcome to Wouter Advice & Event Hub
+            Welcome to Wouter Advice & Idea Hub
           </h2>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
-            A full-stack Node.js Express platform supporting CRUD operations for Users, Advices, Events, Ideas,
-            and automated Combined relational queries linking Advices directly with Event timelines.
+            This is where we keep track of advice given and acted on, as well as ideas and jobs on offer.
           </p>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              id="dash-explore-advices"
-              onClick={() => setActiveTab('advices')}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/30"
-            >
-              <span>Manage Advices</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
             <button
               id="dash-explore-combined"
               onClick={() => setActiveTab('events')}
               className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-all border border-slate-700"
             >
               <Database className="w-4 h-4 text-emerald-400" />
-              <span>View Combined Events</span>
-            </button>
-            <button
-              id="dash-api-explorer"
-              onClick={() => setActiveTab('api-explorer')}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-all border border-slate-700"
-            >
-              <FileText className="w-4 h-4 text-amber-400" />
-              <span>Live API Documentation</span>
+              <span>View Combined Advice and Events</span>
             </button>
           </div>
         </div>

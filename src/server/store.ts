@@ -162,24 +162,56 @@ class DataStore {
     this.jobsMemory = [
       {
         id: 1,
-        jobTitle: 'Senior Full Stack Engineer (Node.js & MySQL)',
+        jobTitle: 'Senior Full Stack Engineer (Node.js & React)',
         advertDate: '2026-08-01 10:00:00',
-        company: 'AdviceTech Global',
-        url: 'https://careers.advicetech.com/jobs/101',
+        company: 'AdviceTech NZ',
+        url: 'https://careers.advicetech.co.nz/jobs/101',
+        area: 'Auckland CBD, New Zealand',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
         id: 2,
-        jobTitle: 'Database Architect & Sequelize Lead',
+        jobTitle: 'Cloud & DevOps Architect',
         advertDate: '2026-07-29 14:30:00',
-        company: 'DataScale Systems',
-        url: 'https://datascale.io/careers/db-architect',
+        company: 'Digital Government Services',
+        url: 'https://govt.nz/careers/cloud-architect',
+        area: 'Wellington Central, New Zealand',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 3,
+        jobTitle: 'Data Platform Engineer',
+        advertDate: '2026-08-03 09:15:00',
+        company: 'Canterbury Tech Systems',
+        url: 'https://canterburytech.nz/jobs/data-eng',
+        area: 'Christchurch Central, New Zealand',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 4,
+        jobTitle: 'Lead Software Developer',
+        advertDate: '2026-08-05 11:00:00',
+        company: 'Waikato Innovation Hub',
+        url: 'https://waikatohub.co.nz/careers/lead-dev',
+        area: 'Frankton, Hamilton, New Zealand',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 5,
+        jobTitle: 'Senior Mobile & Web Developer',
+        advertDate: '2026-08-06 08:45:00',
+        company: 'Southern Lakes Digital',
+        url: 'https://southernlakesdigital.co.nz/jobs/mobile',
+        area: 'Queenstown Central, New Zealand',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
     ];
-    this.jobIdCounter = 3;
+    this.jobIdCounter = 6;
   }
 
   private async seedInitialMySqlData() {
@@ -212,8 +244,11 @@ class DataStore {
         ]);
 
         await JobModel.bulkCreate([
-          { jobTitle: 'Senior Full Stack Engineer (Node.js & MySQL)', advertDate: '2026-08-01 10:00:00', company: 'AdviceTech Global', url: 'https://careers.advicetech.com/jobs/101' },
-          { jobTitle: 'Database Architect & Sequelize Lead', advertDate: '2026-07-29 14:30:00', company: 'DataScale Systems', url: 'https://datascale.io/careers/db-architect' },
+          { jobTitle: 'Senior Full Stack Engineer (Node.js & React)', advertDate: '2026-08-01 10:00:00', company: 'AdviceTech NZ', url: 'https://careers.advicetech.co.nz/jobs/101', area: 'Auckland CBD, New Zealand' },
+          { jobTitle: 'Cloud & DevOps Architect', advertDate: '2026-07-29 14:30:00', company: 'Digital Government Services', url: 'https://govt.nz/careers/cloud-architect', area: 'Wellington Central, New Zealand' },
+          { jobTitle: 'Data Platform Engineer', advertDate: '2026-08-03 09:15:00', company: 'Canterbury Tech Systems', url: 'https://canterburytech.nz/jobs/data-eng', area: 'Christchurch Central, New Zealand' },
+          { jobTitle: 'Lead Software Developer', advertDate: '2026-08-05 11:00:00', company: 'Waikato Innovation Hub', url: 'https://waikatohub.co.nz/careers/lead-dev', area: 'Frankton, Hamilton, New Zealand' },
+          { jobTitle: 'Senior Mobile & Web Developer', advertDate: '2026-08-06 08:45:00', company: 'Southern Lakes Digital', url: 'https://southernlakesdigital.co.nz/jobs/mobile', area: 'Queenstown Central, New Zealand' },
         ]);
         console.log('[MySQL] Seeding complete.');
       }
@@ -693,12 +728,14 @@ class DataStore {
   }
 
   async createJob(params: any): Promise<Job> {
+    const area = params.area && params.area.trim() ? params.area.trim() : 'Remote / Global';
     if (isMySqlConnected) {
       const created = await JobModel.create({
         jobTitle: params.jobTitle,
         advertDate: params.advertDate,
         company: params.company,
         url: params.url,
+        area,
       });
       return created.toJSON() as Job;
     }
@@ -709,6 +746,7 @@ class DataStore {
       advertDate: params.advertDate,
       company: params.company,
       url: params.url,
+      area,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -727,6 +765,7 @@ class DataStore {
       if (params.advertDate) updateData.advertDate = params.advertDate;
       if (params.company) updateData.company = params.company;
       if (params.url) updateData.url = params.url;
+      if (params.area !== undefined) updateData.area = params.area;
 
       await job.update(updateData);
       return job.toJSON() as Job;
@@ -739,6 +778,7 @@ class DataStore {
     if (params.advertDate) job.advertDate = params.advertDate;
     if (params.company) job.company = params.company;
     if (params.url) job.url = params.url;
+    if (params.area !== undefined) job.area = params.area;
     job.updatedAt = new Date().toISOString();
 
     return job;

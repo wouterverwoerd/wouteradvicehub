@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, RefreshCw, Search, ExternalLink, Calendar, User, Tag, BookOpen, X, Rss, AlertCircle } from 'lucide-react';
 import { WordPressFeedInfo, WordPressPost } from '../types';
-import { MediaPreview } from './MediaPreview';
 
 export const WordPressView: React.FC = () => {
   const [feedInfo, setFeedInfo] = useState<WordPressFeedInfo | null>(null);
@@ -169,16 +168,7 @@ export const WordPressView: React.FC = () => {
               key={post.id}
               className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
             >
-              {post.imageUrl && (
-                <div className="h-48 w-full bg-slate-100 overflow-hidden relative">
-                  <img
-                    src={post.imageUrl}
-                    alt={post.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              )}
+              
 
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
@@ -203,14 +193,6 @@ export const WordPressView: React.FC = () => {
                     {post.contentSnippet}
                   </p>
 
-                  {post.link && (
-                    <MediaPreview
-                      urlOrFilename={post.imageUrl || post.link}
-                      title={post.title}
-                      label="Linked Media / Post Web View"
-                      compact={true}
-                    />
-                  )}
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
@@ -254,10 +236,10 @@ export const WordPressView: React.FC = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden relative">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="pr-4">
-                <span className="text-xs text-blue-600 font-semibold">WordPress Post</span>
+                <span className="text-xs text-blue-600 font-semibold">Blog Post</span>
                 <h3 className="text-lg font-bold text-slate-900 leading-snug">{selectedPost.title}</h3>
                 <div className="flex items-center space-x-3 text-xs text-slate-500 mt-1">
-                  <span>Published: {new Date(selectedPost.pubDate).toLocaleString()}</span>
+                  <span>Published: {new Date(selectedPost.pubDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                   {selectedPost.creator && <span>• By {selectedPost.creator}</span>}
                 </div>
               </div>
@@ -271,19 +253,15 @@ export const WordPressView: React.FC = () => {
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4 prose prose-slate max-w-none text-sm text-slate-800 leading-relaxed">
-              {selectedPost.imageUrl && (
-                <img
-                  src={selectedPost.imageUrl}
-                  alt={selectedPost.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full max-h-72 object-cover rounded-xl mb-4"
-                />
-              )}
-
               {selectedPost.content ? (
                 <div
-                  dangerouslySetInnerHTML={{ __html: selectedPost.content }}
-                  className="wordpress-article-body space-y-3"
+                  dangerouslySetInnerHTML={{
+                    __html: selectedPost.content
+                      .replace(/<figure[^>]*>[\s\S]*?<\/figure>/gi, '')
+                      .replace(/<picture[^>]*>[\s\S]*?<\/picture>/gi, '')
+                      .replace(/<img[^>]*>/gi, '')
+                  }}
+                  className="wordpress-article-body space-y-3 [&_img]:hidden [&_figure]:hidden"
                 />
               ) : (
                 <p className="whitespace-pre-line">{selectedPost.contentSnippet}</p>

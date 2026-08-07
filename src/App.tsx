@@ -119,7 +119,7 @@ export default function App() {
 
             {activeTab === 'jobs' && <JobsView jobs={jobs} onRefresh={fetchAllData} />}
 
-            {activeTab === 'wordpress' && <WordPressView />}
+            {(activeTab === 'wordpress' || activeTab === 'blog') && <WordPressView />}
 
             {activeTab === 'users' && <UsersView users={users} onRefresh={fetchAllData} />}
 
@@ -130,7 +130,7 @@ export default function App() {
 
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Wouter Advice & Event Management API — Based on wouteradvicenode</span>
+          <span>Wouter Advice & Idea Hub</span>
           <span>Node.js Express + React SPA</span>
         </div>
       </footer>
