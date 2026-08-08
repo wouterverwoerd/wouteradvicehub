@@ -192,19 +192,20 @@ export const EventsView: React.FC<EventsViewProps> = ({
                 <div key={item.adviceID} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                   <div
                     onClick={() => toggleAdviceExpand(item.adviceID)}
-                    className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 transition-colors"
+                    className="p-5 cursor-pointer hover:bg-slate-50/80 transition-colors space-y-4"
                   >
+                    {/* Detail Section */}
                     <div className="flex items-start space-x-3">
                       <div className="mt-0.5 p-2 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
                           <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
                             Advice #{item.adviceID}
                           </span>
                         </div>
-                        <p className="text-sm font-semibold text-slate-800 line-clamp-1 mb-2">{item.adviceDescription}</p>
+                        <p className="text-sm font-semibold text-slate-800 mb-2">{item.adviceDescription}</p>
                         {item.adviceFilename && (
                           <div className="mt-2">
                             <MediaPreview
@@ -218,18 +219,26 @@ export const EventsView: React.FC<EventsViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 shrink-0">
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                        {item.Events.length} Event{item.Events.length !== 1 ? 's' : ''}
-                      </span>
+                    {/* Sub-row below Detail Section: Events Count & Add Event Link */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                          {item.Events.length} Event{item.Events.length !== 1 ? 's' : ''}
+                        </span>
+                        <span className="text-slate-400 text-xs hidden sm:inline">
+                          {isExpanded ? '(Click to collapse)' : '(Click to expand)'}
+                        </span>
+                      </div>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenAddModal(item.adviceID);
                         }}
-                        className="px-2.5 py-1 text-xs bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded-lg transition-colors font-medium"
+                        className="px-3 py-1.5 text-xs bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 hover:border-emerald-200 border border-transparent rounded-lg transition-colors font-medium inline-flex items-center space-x-1"
                       >
-                        + Add Event
+                        <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Add Event</span>
                       </button>
                     </div>
                   </div>

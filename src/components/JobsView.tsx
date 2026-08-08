@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Briefcase, Plus, Search, Edit2, Trash2, Calendar, Building, ExternalLink, X, MapPin, Globe } from 'lucide-react';
 import { Job } from '../types';
-import { MediaPreview } from './MediaPreview';
 import { JobsMap } from './JobsMap';
 
 interface JobsViewProps {
@@ -209,19 +208,24 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 space-y-2 text-xs">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="flex items-center space-x-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Advert Date: <strong>{job.advertDate}</strong></span>
-                </span>
-              </div>
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span className="flex items-center space-x-1">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <span>Advert Date: <strong>{job.advertDate}</strong></span>
+              </span>
 
-              <MediaPreview
-                urlOrFilename={job.url}
-                title={`${job.jobTitle} - ${job.company}`}
-                label="Job Advert Link / Document"
-              />
+              {job.url && (
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1 font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                  title="Open job advert URL"
+                >
+                  <span>Job Link</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           </div>
         ))}
