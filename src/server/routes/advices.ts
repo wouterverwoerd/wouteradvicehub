@@ -63,12 +63,12 @@ router.get('/', async (req, res, next) => {
       return res.json(formattedDbAdvices);
     }
 
-    // Merge external advices with database advices, deduplicating
+    // Merge external advices with database advices, deduplicating by content match (never drop external items on ID collision with local DB)
     const combined: any[] = [...formattedDbAdvices];
     for (const ext of externalAdvices) {
       const isDup = combined.some(
         (existing) =>
-          existing.id === ext.id ||
+          (existing.source === ext.source && existing.id === ext.id) ||
           (existing.content &&
             ext.content &&
             existing.content.trim().toLowerCase() === ext.content.trim().toLowerCase())
@@ -113,7 +113,7 @@ router.get('/:id', async (req, res, next) => {
       // ignore
     }
 
-      res.status(404).json({ message: 'Advice not found' });
+    res.status(404).json({ message: 'Advice not found' });
   } catch (err) {
     next(err);
   }

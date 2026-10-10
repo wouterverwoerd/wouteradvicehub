@@ -55,12 +55,12 @@ router.get('/', async (req, res, next) => {
       return res.json(formattedDbIdeas);
     }
 
-    // Merge external ideas with database ideas, deduplicating
+    // Merge external ideas with database ideas, deduplicating by content match (never drop external items on ID collision with local DB)
     const combined: any[] = [...formattedDbIdeas];
     for (const ext of externalIdeas) {
       const isDup = combined.some(
         (existing) =>
-          existing.id === ext.id ||
+          (existing.source === ext.source && existing.id === ext.id) ||
           (existing.description &&
             ext.description &&
             existing.description.trim().toLowerCase() === ext.description.trim().toLowerCase())
@@ -105,7 +105,7 @@ router.get('/:id', async (req, res, next) => {
       // ignore
     }
 
-      res.status(404).json({ message: 'Idea not found' });
+    res.status(404).json({ message: 'Idea not found' });
   } catch (err) {
     next(err);
   }

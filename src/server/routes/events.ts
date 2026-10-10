@@ -64,12 +64,12 @@ router.get('/', async (req, res, next) => {
       return res.json(formattedDbEvents);
     }
 
-    // Merge external events with database events, deduplicating
+    // Merge external events with database events, deduplicating by content match (never drop external items on ID collision with local DB)
     const combined: any[] = [...formattedDbEvents];
     for (const ext of externalEvents) {
       const isDup = combined.some(
         (existing) =>
-          existing.id === ext.id ||
+          (existing.source === ext.source && existing.id === ext.id) ||
           (existing.description &&
             ext.description &&
             existing.description.trim().toLowerCase() === ext.description.trim().toLowerCase() &&
@@ -91,18 +91,59 @@ const sendCombined = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const combined = await store.getCombinedEvents();
 
-    // Fetch remote events to merge into combined groups if any
+    // Fetch remote advices and events to populate complete advice details and child events
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 6000);
-      const extRes = await fetch('https://wouteradvicenode.onrender.com/events', {
-        headers: { Accept: 'application/json' },
-        signal: controller.signal,
-      });
+
+      const [advicesRes, eventsRes] = await Promise.allSettled([
+        fetch('https://wouteradvicenode.onrender.com/advices', {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        }),
+        fetch('https://wouteradvicenode.onrender.com/events', {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        }),
+      ]);
       clearTimeout(timeoutId);
 
-      if (extRes.ok) {
-        const raw = await extRes.json();
+      // Merge remote advices first to guarantee full advice details (content, users, filename, dates)
+      if (advicesRes.status === 'fulfilled' && advicesRes.value.ok) {
+        const rawAdvices = await advicesRes.value.json();
+        const adviceItems = Array.isArray(rawAdvices) ? rawAdvices : Array.isArray(rawAdvices?.advices) ? rawAdvices.advices : [];
+        for (const adv of adviceItems) {
+          if (!adv || !adv.id) continue;
+          const existing = combined.find((c) => String(c.adviceID) === String(adv.id));
+          if (existing) {
+            existing.adviceDescription = adv.content || adv.description || existing.adviceDescription;
+            existing.adviceFilename = adv.filename || existing.adviceFilename;
+            existing.userid = String(adv.userid ?? existing.userid ?? '1');
+            existing.touserid = String(adv.touserid ?? existing.touserid ?? '2');
+            existing.createdAt = adv.createdAt || existing.createdAt;
+            existing.updatedAt = adv.updatedAt || existing.updatedAt;
+            existing.source = 'external';
+            existing.isExternal = true;
+          } else {
+            combined.push({
+              adviceID: Number(adv.id),
+              adviceDescription: adv.content || adv.description || `Advice #${adv.id}`,
+              adviceFilename: adv.filename || '-',
+              userid: String(adv.userid ?? '4'),
+              touserid: String(adv.touserid ?? '3'),
+              createdAt: adv.createdAt || new Date().toISOString(),
+              updatedAt: adv.updatedAt || new Date().toISOString(),
+              source: 'external',
+              isExternal: true,
+              Events: [],
+            });
+          }
+        }
+      }
+
+      // Merge remote events into their respective advice groups
+      if (eventsRes.status === 'fulfilled' && eventsRes.value.ok) {
+        const raw = await eventsRes.value.json();
         const items = Array.isArray(raw) ? raw : Array.isArray(raw?.events) ? raw.events : [];
         for (const item of items) {
           if (!item || !item.adviceid) continue;
@@ -113,10 +154,17 @@ const sendCombined = async (req: Request, res: Response, next: NextFunction) => 
             eventDate: item.eventDate || item.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
             eventFilename: item.eventFilename || '-',
             userid: item.userid,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
           };
 
           if (adviceGroup) {
-            const exists = adviceGroup.Events.some((e) => e.eventID === item.id || e.eventDescription === item.description);
+            const exists = adviceGroup.Events.some(
+              (e) =>
+                e.eventDescription &&
+                item.description &&
+                e.eventDescription.trim().toLowerCase() === item.description.trim().toLowerCase()
+            );
             if (!exists) {
               adviceGroup.Events.push(extEventDetail);
             }
@@ -127,6 +175,10 @@ const sendCombined = async (req: Request, res: Response, next: NextFunction) => 
               adviceFilename: '-',
               userid: String(item.userid || '4'),
               touserid: '4',
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+              source: 'external',
+              isExternal: true,
               Events: [extEventDetail],
             });
           }
@@ -176,7 +228,7 @@ router.get('/:id', async (req, res, next) => {
       // ignore
     }
 
-      res.status(404).json({ message: 'Event not found' });
+    res.status(404).json({ message: 'Event not found' });
   } catch (err) {
     next(err);
   }

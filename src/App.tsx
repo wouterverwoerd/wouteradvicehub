@@ -150,7 +150,13 @@ export default function App() {
             )}
 
             {activeTab === 'advices' && (
-              <AdvicesView advices={advices} users={users} onRefresh={fetchAllData} />
+              <AdvicesView
+                advices={advices}
+                users={users}
+                combinedEvents={combinedEvents}
+                events={events}
+                onRefresh={fetchAllData}
+              />
             )}
 
             {activeTab === 'events' && (

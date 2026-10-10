@@ -7,6 +7,7 @@ interface MediaPreviewProps {
   title: string;
   label?: string;
   compact?: boolean;
+  baseImageUrl?: string;
 }
 
 export const MediaPreview: React.FC<MediaPreviewProps> = ({
@@ -14,6 +15,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   title,
   label = 'Attachment / Link',
   compact = false,
+  baseImageUrl,
 }) => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
@@ -38,9 +40,15 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   const isSheet = lower.endsWith('.csv') || lower.endsWith('.xlsx');
   const isDoc = lower.endsWith('.doc') || lower.endsWith('.docx') || lower.endsWith('.txt') || lower.endsWith('.log');
 
+  const resolvedUrl = !isHttp && baseImageUrl && clean !== '-' && clean.toLowerCase() !== 'nofile'
+    ? `${baseImageUrl.replace(/\/+$/, '')}/${clean.replace(/^\/+/, '')}`
+    : clean;
+
   const displayImage = isImage
     ? isHttp
       ? clean
+      : baseImageUrl && clean !== '-' && clean.toLowerCase() !== 'nofile'
+      ? resolvedUrl
       : `https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80`
     : null;
 
@@ -114,9 +122,9 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
             <span>Open Document / Image Viewer</span>
           </button>
 
-          {isHttp && (
+          {(isHttp || resolvedUrl.startsWith('http://') || resolvedUrl.startsWith('https://')) && (
             <a
-              href={clean}
+              href={resolvedUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-400 hover:text-slate-600 inline-flex items-center space-x-0.5"
@@ -132,7 +140,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
         isOpen={isViewerOpen}
         onClose={() => setIsViewerOpen(false)}
         title={title}
-        urlOrFilename={clean}
+        urlOrFilename={resolvedUrl}
       />
     </>
   );

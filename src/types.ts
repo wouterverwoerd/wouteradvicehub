@@ -66,6 +66,8 @@ export interface CombinedEventDetail {
   eventDate: string;
   eventFilename: string;
   userid?: number | string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CombinedAdviceEvent {
@@ -74,6 +76,10 @@ export interface CombinedAdviceEvent {
   adviceFilename: string;
   userid?: string;
   touserid?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  source?: 'database' | 'external';
+  isExternal?: boolean;
   Events: CombinedEventDetail[];
 }
 

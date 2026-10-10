@@ -315,7 +315,7 @@ class DataStore {
         id: 7,
         jobTitle: 'Software Engineer',
         advertDate: '2026-08-07 10:15:00',
-        company: 'Talent Army ñ Winner of Medium Recruitment Agency of the Year 2025',
+        company: 'Talent Army ‚Äì Winner of Medium Recruitment Agency of the Year 2025',
         url: '#',
         area: 'Christchurch Central, Canterbury',
         salary: null,
@@ -368,7 +368,7 @@ class DataStore {
         company: 'ScreenSouth Ltd',
         url: '#',
         area: 'Christchurch Central, Canterbury',
-        salary: '$37 ñ $42 per hour',
+        salary: '$37 ‚Äì $42 per hour',
         employmentType: 'Contract / Casual',
         employment_type: 'Contract / Casual',
         highlights: ['Hybrid'],
@@ -396,7 +396,7 @@ class DataStore {
         id: 12,
         jobTitle: 'Engineer',
         advertDate: '2026-08-07 16:00:00',
-        company: 'New Zealand Defence Force | Te Ope Katua o Aotearoa',
+        company: 'New Zealand Defence Force | Te Ope KƒÅtua o Aotearoa',
         url: '#',
         area: 'Burnham, Canterbury',
         salary: '$97,344 - $112,555 (including 4% superannuation)',
@@ -523,12 +523,12 @@ class DataStore {
           { jobTitle: 'Lead Software Developer', advertDate: '2026-08-05 11:00:00', company: 'Waikato Innovation Hub', url: 'https://waikatohub.co.nz/careers/lead-dev', area: 'Frankton, Hamilton, New Zealand', salary: '$130,000 - $155,000 per annum', employmentType: 'Full-time' },
           { jobTitle: 'Senior Mobile & Web Developer', advertDate: '2026-08-06 08:45:00', company: 'Southern Lakes Digital', url: 'https://southernlakesdigital.co.nz/jobs/mobile', area: 'Queenstown Central, New Zealand', salary: '$120,000 - $140,000 per annum', employmentType: 'Permanent, Full-time' },
           { jobTitle: 'Engineer Research Software', advertDate: '2026-08-07 09:00:00', company: 'University of Otago', url: '#', area: 'Christchurch Central, Canterbury', salary: '$99,364 to $120,834 per year', employmentType: 'Full-time, Academic' },
-          { jobTitle: 'Software Engineer', advertDate: '2026-08-07 10:15:00', company: 'Talent Army ñ Winner of Medium Recruitment Agency of the Year 2025', url: '#', area: 'Christchurch Central, Canterbury', salary: null, employmentType: 'Office-based role' },
+          { jobTitle: 'Software Engineer', advertDate: '2026-08-07 10:15:00', company: 'Talent Army ‚Äì Winner of Medium Recruitment Agency of the Year 2025', url: '#', area: 'Christchurch Central, Canterbury', salary: null, employmentType: 'Office-based role' },
           { jobTitle: 'CONTRACT Senior iOS Mobile Apps Developer (Swift)', advertDate: '2026-08-07 11:30:00', company: 'Sunstone Talent', url: '#', area: 'Christchurch, Canterbury', salary: '$100-$130 p/h', employmentType: 'Contract (9 month contract)' },
           { jobTitle: 'Service Desk Analyst', advertDate: '2026-08-07 13:00:00', company: 'Softsource Ltd', url: '#', area: 'Christchurch Central, Canterbury', salary: null, employmentType: 'Full-time' },
-          { jobTitle: 'Data and Reporting Administrator', advertDate: '2026-08-07 14:15:00', company: 'ScreenSouth Ltd', url: '#', area: 'Christchurch Central, Canterbury', salary: '$37 ñ $42 per hour', employmentType: 'Contract / Casual' },
+          { jobTitle: 'Data and Reporting Administrator', advertDate: '2026-08-07 14:15:00', company: 'ScreenSouth Ltd', url: '#', area: 'Christchurch Central, Canterbury', salary: '$37 ‚Äì $42 per hour', employmentType: 'Contract / Casual' },
           { jobTitle: 'IT Systems Administrator', advertDate: '2026-08-07 15:30:00', company: 'Kea Aerospace', url: '#', area: 'Burnside, Canterbury', salary: null, employmentType: 'Full-time or part-time considered' },
-          { jobTitle: 'Engineer', advertDate: '2026-08-07 16:00:00', company: 'New Zealand Defence Force | Te Ope Katua o Aotearoa', url: '#', area: 'Burnham, Canterbury', salary: '$97,344 - $112,555 (including 4% superannuation)', employmentType: 'Permanent, Full-time' },
+          { jobTitle: 'Engineer', advertDate: '2026-08-07 16:00:00', company: 'New Zealand Defence Force | Te Ope KƒÅtua o Aotearoa', url: '#', area: 'Burnham, Canterbury', salary: '$97,344 - $112,555 (including 4% superannuation)', employmentType: 'Permanent, Full-time' },
           { jobTitle: 'MADCAP - Test Automation Engineer', advertDate: '2026-08-08 09:30:00', company: 'Jade Software Corporation Ltd', url: '#', area: 'Christchurch Central, Canterbury', salary: null, employmentType: 'Full-time' },
           { jobTitle: 'OPERA Cloud Specialist', advertDate: '2026-08-08 10:45:00', company: 'Scenic Hotel Group', url: '#', area: 'Burnside, Canterbury', salary: null, employmentType: 'Full-time' },
           { jobTitle: 'Automation Engineer', advertDate: '2026-08-08 11:20:00', company: 'Fluid Engineering', url: '#', area: 'Christchurch, Canterbury', salary: '$110k - $140k p.a. + insurances + paid overtime', employmentType: 'Full-time' },
@@ -802,6 +802,10 @@ class DataStore {
           adviceFilename: advice.filename,
           userid: advice.userid,
           touserid: advice.touserid,
+          createdAt: advice.createdAt,
+          updatedAt: advice.updatedAt,
+          source: (advice.source || 'database') as 'database' | 'external',
+          isExternal: advice.isExternal ?? false,
           Events: relatedEvents,
         };
       });
@@ -816,6 +820,8 @@ class DataStore {
           eventDate: e.eventDate,
           eventFilename: e.eventFilename,
           userid: e.userid,
+          createdAt: e.createdAt,
+          updatedAt: e.updatedAt,
         }));
 
       return {
@@ -824,6 +830,10 @@ class DataStore {
         adviceFilename: advice.filename,
         userid: advice.userid,
         touserid: advice.touserid,
+        createdAt: advice.createdAt,
+        updatedAt: advice.updatedAt,
+        source: (advice.source || 'database') as 'database' | 'external',
+        isExternal: advice.isExternal ?? false,
         Events: relatedEvents,
       };
     });

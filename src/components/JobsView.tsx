@@ -123,7 +123,7 @@ const SAMPLE_JOBS_JSON = JSON.stringify(
     },
     {
       title: "Software Engineer",
-      company: "Talent Army ñ Winner of Medium Recruitment Agency of the Year 2025",
+      company: "Talent Army ‚Äì Winner of Medium Recruitment Agency of the Year 2025",
       location: "Christchurch Central, Canterbury",
       salary: null,
       employment_type: "Office-based role",
@@ -159,7 +159,7 @@ const SAMPLE_JOBS_JSON = JSON.stringify(
       title: "Data and Reporting Administrator",
       company: "ScreenSouth Ltd",
       location: "Christchurch Central, Canterbury",
-      salary: "$37 ñ $42 per hour",
+      salary: "$37 ‚Äì $42 per hour",
       employment_type: null,
       highlights: [
         "Hybrid"
@@ -178,7 +178,7 @@ const SAMPLE_JOBS_JSON = JSON.stringify(
     },
     {
       title: "Engineer",
-      company: "New Zealand Defence Force | Te Ope Katua o Aotearoa",
+      company: "New Zealand Defence Force | Te Ope KƒÅtua o Aotearoa",
       location: "Burnham, Canterbury",
       salary: "$97,344 - $112,555 (including 4% superannuation)",
       employment_type: null,
@@ -661,8 +661,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
           </h2>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <p className="text-xs text-slate-500">
-            Manage listings, import jobs from JSON, and inspect salary, location, and key highlights.
-          </p>
+              Manage listings, import jobs from JSON, and inspect salary, location, and key highlights.
+            </p>
             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/80">
               <Globe className="w-3 h-3 text-indigo-500" />
               <span>Live API Feed:</span>
@@ -775,16 +775,16 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
           const hasValidUrl = job.url && job.url.trim() && job.url !== '#' && !job.url.startsWith('javascript:');
 
           return (
-          <div
-            key={job.id}
-            className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
+            <div
+              key={job.id}
+              className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                  Job #{job.id}
-                </span>
+                      Job #{job.id}
+                    </span>
                     {empType && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                         {empType}
@@ -792,51 +792,51 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
                     )}
                   </div>
 
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handleOpenEditModal(job)}
-                    className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100"
-                    title="Edit Job Advert"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(job.id)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100"
-                    title="Delete Job Advert"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => handleOpenEditModal(job)}
+                      className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100"
+                      title="Edit Job Advert"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(job.id)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100"
+                      title="Delete Job Advert"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <h3 className="text-slate-900 font-bold text-base leading-snug mb-2">{job.jobTitle}</h3>
+                <h3 className="text-slate-900 font-bold text-base leading-snug mb-2">{job.jobTitle}</h3>
 
                 <div className="space-y-2 mb-4">
                   {/* Company */}
-                <div className="flex items-center text-slate-600 text-xs font-medium space-x-1.5">
-                  <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <div className="flex items-center text-slate-600 text-xs font-medium space-x-1.5">
+                    <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="truncate">{job.company}</span>
-                </div>
+                  </div>
 
-                {/* Advertised Area Location Tag */}
+                  {/* Advertised Area Location Tag */}
                   <div className="flex items-center flex-wrap gap-1.5">
-                <button
-                  onClick={() => setSelectedArea(job.area || 'Remote / Global')}
-                  className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold border border-indigo-200/80 transition-colors"
-                  title="Filter by this area on map"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    <button
+                      onClick={() => setSelectedArea(job.area || 'Remote / Global')}
+                      className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold border border-indigo-200/80 transition-colors"
+                      title="Filter by this area on map"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                       <span>{job.area || 'Remote / Global'}</span>
-                </button>
-              </div>
+                    </button>
+                  </div>
 
                   {/* Salary Display if available */}
                   {job.salary && (
                     <div className="flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/60 w-fit">
                       <DollarSign className="w-3.5 h-3.5 text-emerald-600 mr-1 shrink-0" />
                       <span>{job.salary}</span>
-            </div>
+                    </div>
                   )}
 
                   {/* Highlights section */}
@@ -862,7 +862,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
                         <ul className="mt-1.5 space-y-1 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                           {job.highlights!.map((hl, i) => (
                             <li key={i} className="flex items-start space-x-1.5">
-                              <span className="text-indigo-500 font-bold text-sm leading-none">ï</span>
+                              <span className="text-indigo-500 font-bold text-sm leading-none">‚Ä¢</span>
                               <span className="leading-tight">{hl}</span>
                             </li>
                           ))}
@@ -874,27 +874,27 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 mt-2">
-              <span className="flex items-center space-x-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <span className="flex items-center space-x-1">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   <span>{job.advertDate?.slice(0, 10)}</span>
-              </span>
+                </span>
 
                 {hasValidUrl ? (
-                <a
-                  href={job.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1 font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
-                  title="Open job advert URL"
-                >
-                  <span>Job Link</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                  <a
+                    href={job.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1 font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                    title="Open job advert URL"
+                  >
+                    <span>Job Link</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 ) : (
                   <span className="text-[11px] text-slate-400 italic">No link specified</span>
-              )}
+                )}
+              </div>
             </div>
-          </div>
           );
         })}
 
@@ -1027,10 +1027,10 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
 
                         {analyzedJson.totalDuplicates > 0 && deduplicateOption && (
                           <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200/60 pl-6">
-                            ?? {analyzedJson.totalDuplicates} duplicate listing{analyzedJson.totalDuplicates === 1 ? '' : 's'} detected ({analyzedJson.duplicatesExistingCount} already on board{analyzedJson.duplicatesWithinBatchCount > 0 ? `, ${analyzedJson.duplicatesWithinBatchCount} repeated in this JSON` : ''}). {updateExistingOption ? 'Existing listings will be enriched and no duplicate rows will be created.' : 'Duplicates will be skipped so all listings remain unique.'}
+                            ‚ÑπÔ∏è {analyzedJson.totalDuplicates} duplicate listing{analyzedJson.totalDuplicates === 1 ? '' : 's'} detected ({analyzedJson.duplicatesExistingCount} already on board{analyzedJson.duplicatesWithinBatchCount > 0 ? `, ${analyzedJson.duplicatesWithinBatchCount} repeated in this JSON` : ''}). {updateExistingOption ? 'Existing listings will be enriched and no duplicate rows will be created.' : 'Duplicates will be skipped so all listings remain unique.'}
                           </p>
                         )}
-          </div>
+                      </div>
 
                       {/* Preview of jobs to import with duplicate indicators */}
                       <div>
@@ -1060,15 +1060,15 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
                                   </div>
                                   <div className="text-[10px] text-slate-500 flex items-center space-x-2">
                                     <span>{item.company}</span>
-                                    <span>ï</span>
+                                    <span>‚Ä¢</span>
                                     <span>{item.location || item.area || 'Remote / Global'}</span>
                                     {item.salary && (
                                       <>
-                                        <span>ï</span>
+                                        <span>‚Ä¢</span>
                                         <span className="text-emerald-700 font-medium">{item.salary}</span>
                                       </>
-        )}
-      </div>
+                                    )}
+                                  </div>
                                 </div>
 
                                 <div className="shrink-0">
@@ -1156,9 +1156,9 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div>
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingJob ? `Edit Job Advert #${editingJob.id}` : 'Create New Job Advert'}
-              </h3>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {editingJob ? `Edit Job Advert #${editingJob.id}` : 'Create New Job Advert'}
+                </h3>
                 <p className="text-[11px] text-indigo-700 flex items-center gap-1 mt-0.5">
                   <Globe className="w-3 h-3 text-indigo-500" />
                   <span>Preference target: <strong className="font-mono">wouteradvicenode.onrender.com</strong></span>
