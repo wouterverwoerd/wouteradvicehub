@@ -97,16 +97,43 @@ export interface Job {
   company: string;
   url: string;
   area?: string;
+  salary?: string | null;
+  employmentType?: string | null;
+  employment_type?: string | null;
+  highlights?: string[] | null;
   createdAt?: string;
   updatedAt?: string;
 }
 
+export interface JobImportResult {
+  message: string;
+  count: number;
+  createdCount: number;
+  skippedDuplicates: number;
+  updatedCount: number;
+  totalProcessed: number;
+  jobs: Job[];
+  duplicateTitles?: string[];
+}
+
+export interface DeduplicateResult {
+  message: string;
+  removedCount: number;
+  remainingCount: number;
+}
+
 export interface JobInput {
-  jobTitle: string;
-  advertDate: string;
+  jobTitle?: string;
+  title?: string;
+  advertDate?: string;
   company: string;
-  url: string;
+  url?: string;
   area?: string;
+  location?: string;
+  salary?: string | null;
+  employmentType?: string | null;
+  employment_type?: string | null;
+  highlights?: string[] | null;
 }
 
 export interface WordPressPost {

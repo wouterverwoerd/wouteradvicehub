@@ -79,8 +79,11 @@ JobModel.init(
     jobTitle: { type: DataTypes.STRING, allowNull: false },
     advertDate: { type: DataTypes.STRING, allowNull: false },
     company: { type: DataTypes.STRING, allowNull: false },
-    url: { type: DataTypes.STRING, allowNull: false },
+    url: { type: DataTypes.STRING, allowNull: true, defaultValue: '#' },
     area: { type: DataTypes.STRING, allowNull: true, defaultValue: 'Remote / Global' },
+    salary: { type: DataTypes.STRING, allowNull: true },
+    employmentType: { type: DataTypes.STRING, allowNull: true },
+    highlights: { type: DataTypes.JSON, allowNull: true },
   },
   { sequelize, modelName: 'Job', tableName: 'jobs', timestamps: true }
 );
@@ -109,3 +112,27 @@ export async function initMySqlConnection(): Promise<boolean> {
     return false;
   }
 }
+
+export {
+  JobModel as Job,
+  IdeaModel as Idea,
+  UserModel as User,
+  AdviceModel as Advice,
+  EventModel as Event,
+};
+
+export const db = {
+  sequelize,
+  Job: JobModel,
+  JobModel,
+  Idea: IdeaModel,
+  IdeaModel,
+  User: UserModel,
+  UserModel,
+  Advice: AdviceModel,
+  AdviceModel,
+  Event: EventModel,
+  EventModel,
+};
+
+export default db;

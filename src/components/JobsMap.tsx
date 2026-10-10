@@ -10,12 +10,20 @@ interface JobsMapProps {
 
 // Coordinate lookup for known cities and specific sub-areas
 const CITY_COORDINATES: Record<string, [number, number]> = {
-  // Christchurch & Suburbs
+  // Christchurch & Canterbury Suburbs
   'christchurch central': [-43.5321, 172.6362],
+  'christchurch central, canterbury': [-43.5321, 172.6362],
   'christchurch central, new zealand': [-43.5321, 172.6362],
+  'christchurch, canterbury': [-43.5321, 172.6362],
   'christchurch cbd': [-43.5321, 172.6362],
   'christchurch': [-43.5321, 172.6362],
   'christchurch, new zealand': [-43.5321, 172.6362],
+  'canterbury': [-43.5321, 172.6362],
+  'burnside, canterbury': [-43.4938, 172.5694],
+  'burnside, christchurch': [-43.4938, 172.5694],
+  'burnside': [-43.4938, 172.5694],
+  'burnham, canterbury': [-43.6167, 172.3167],
+  'burnham': [-43.6167, 172.3167],
   'riccarton, christchurch': [-43.5309, 172.5936],
   'riccarton, christchurch, nz': [-43.5309, 172.5936],
   'addington, christchurch': [-43.5410, 172.6160],

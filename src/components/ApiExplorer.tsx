@@ -19,6 +19,18 @@ export const ApiExplorer: React.FC = () => {
     { label: 'GET WordPress Feed', method: 'GET', url: '/wordpress?url=https://woutertest123vw.wordpress.com/feed/', body: '' },
     { label: 'GET All Users', method: 'GET', url: '/users', body: '' },
     {
+      label: 'POST Import Jobs (JSON Array)',
+      method: 'POST',
+      url: '/jobs/import',
+      body: '[\n  {\n    "title": "Engineer Research Software",\n    "company": "University of Otago",\n    "location": "Christchurch Central, Canterbury",\n    "salary": "$99,364 to $120,834 per year",\n    "employment_type": null,\n    "highlights": [\n      "Salary + 6.75% Superannuation + 5 weeks annual leave",\n      "On-going professional development opportunities"\n    ]\n  }\n]',
+    },
+    {
+      label: 'POST Deduplicate Listings',
+      method: 'POST',
+      url: '/jobs/deduplicate',
+      body: '',
+    },
+    {
       label: 'POST Create Job Advert',
       method: 'POST',
       url: '/jobs',

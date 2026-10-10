@@ -11,6 +11,68 @@ import {
   isMySqlConnected,
 } from './db/sequelize.js';
 
+// Uniqueness and Deduplication Helpers
+export function normalizeStr(str?: string | null): string {
+  if (!str) return '';
+  return str.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+export function normalizeJobUrl(url?: string | null): string {
+  if (!url) return '';
+  const trimmed = url.trim().toLowerCase().replace(/\/$/, '');
+  if (trimmed === '#' || trimmed === 'https://' || trimmed === 'http://') return '';
+  try {
+    const u = new URL(trimmed);
+    u.hash = '';
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ref', 'source'].forEach((p) => {
+      u.searchParams.delete(p);
+    });
+    return u.toString().replace(/\/$/, '');
+  } catch {
+    return trimmed;
+  }
+}
+
+export function isJobDuplicate(a: any, b: any): boolean {
+  if (!a || !b) return false;
+
+  const urlA = normalizeJobUrl(a.url);
+  const urlB = normalizeJobUrl(b.url);
+  if (urlA && urlB && urlA === urlB) {
+    return true;
+  }
+
+  const titleA = normalizeStr(a.jobTitle || a.title);
+  const titleB = normalizeStr(b.jobTitle || b.title);
+  const compA = normalizeStr(a.company);
+  const compB = normalizeStr(b.company);
+
+  if (titleA && titleB && compA && compB && titleA === titleB && compA === compB) {
+    const areaA = normalizeStr(a.area || a.location);
+    const areaB = normalizeStr(b.area || b.location);
+
+    const isGenericA = !areaA || areaA.includes('remote') || areaA.includes('global');
+    const isGenericB = !areaB || areaB.includes('remote') || areaB.includes('global');
+
+    if (isGenericA || isGenericB || areaA === areaB || areaA.includes(areaB) || areaB.includes(areaA)) {
+      return true;
+    }
+
+    const cities = ['christchurch', 'auckland', 'wellington', 'hamilton', 'tauranga', 'dunedin', 'canterbury', 'burnham', 'burnside'];
+    const cityA = cities.find((c) => areaA.includes(c));
+    const cityB = cities.find((c) => areaB.includes(c));
+    if (cityA && cityB && cityA === cityB) {
+      return true;
+    }
+    if (cityA && cityB && cityA !== cityB) {
+      return false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
 class DataStore {
   private usersMemory: User[] = [];
   private advicesMemory: Advice[] = [];
@@ -728,25 +790,41 @@ class DataStore {
   }
 
   async createJob(params: any): Promise<Job> {
-    const area = params.area && params.area.trim() ? params.area.trim() : 'Remote / Global';
+    const jobTitle = params.jobTitle || params.title || 'Untitled Role';
+    const company = params.company || 'Unknown Company';
+    const rawArea = params.area || params.location || 'Remote / Global';
+    const area = rawArea && rawArea.trim() ? rawArea.trim() : 'Remote / Global';
+    const advertDate = params.advertDate || new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const url = params.url || '#';
+    const salary = params.salary || null;
+    const employmentType = params.employmentType || params.employment_type || null;
+    const highlights = Array.isArray(params.highlights) ? params.highlights : (params.highlights ? [params.highlights] : null);
+
     if (isMySqlConnected) {
       const created = await JobModel.create({
-        jobTitle: params.jobTitle,
-        advertDate: params.advertDate,
-        company: params.company,
-        url: params.url,
+        jobTitle,
+        advertDate,
+        company,
+        url,
         area,
+        salary,
+        employmentType,
+        highlights,
       });
       return created.toJSON() as Job;
     }
 
     const newJob: Job = {
       id: this.jobIdCounter++,
-      jobTitle: params.jobTitle,
-      advertDate: params.advertDate,
-      company: params.company,
-      url: params.url,
+      jobTitle,
+      advertDate,
+      company,
+      url,
       area,
+      salary,
+      employmentType,
+      employment_type: employmentType,
+      highlights,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -755,17 +833,160 @@ class DataStore {
     return newJob;
   }
 
+  async createJobsBulk(
+    jobsList: any[],
+    options: { deduplicate?: boolean; updateExisting?: boolean } = { deduplicate: true, updateExisting: false }
+  ): Promise<{
+    created: Job[];
+    updated: Job[];
+    skippedDuplicates: number;
+    duplicateTitles: string[];
+    totalProcessed: number;
+  }> {
+    const deduplicate = options?.deduplicate !== false;
+    const updateExisting = options?.updateExisting === true;
+
+    const existingJobs = await this.getAllJobs();
+    const created: Job[] = [];
+    const updated: Job[] = [];
+    const duplicateTitles: string[] = [];
+    let skippedDuplicates = 0;
+
+    for (const item of jobsList) {
+      if (!item || typeof item !== 'object') continue;
+
+      const title = item.jobTitle || item.title;
+      const company = item.company;
+      if (!title && !company) continue;
+
+      if (deduplicate) {
+        // Check against both existing jobs in DB and newly created in this batch
+        const match = existingJobs.find((existing) => isJobDuplicate(item, existing));
+
+        if (match) {
+          duplicateTitles.push(title || match.jobTitle);
+          skippedDuplicates++;
+
+          // If requested, enrich the existing record with new details
+          if (updateExisting) {
+            const updateData: any = {};
+            let hasUpdates = false;
+
+            if (!match.salary && item.salary) {
+              updateData.salary = item.salary;
+              hasUpdates = true;
+            }
+            if (!match.employmentType && (item.employmentType || item.employment_type)) {
+              updateData.employmentType = item.employmentType || item.employment_type;
+              hasUpdates = true;
+            }
+            if ((!match.highlights || match.highlights.length === 0) && item.highlights) {
+              updateData.highlights = Array.isArray(item.highlights) ? item.highlights : [item.highlights];
+              hasUpdates = true;
+            }
+            if ((!match.url || match.url === '#' || match.url === 'https://') && item.url && item.url !== '#') {
+              updateData.url = item.url;
+              hasUpdates = true;
+            }
+
+            if (hasUpdates) {
+              const updatedJob = await this.updateJob(match.id, updateData);
+              updated.push(updatedJob);
+              Object.assign(match, updatedJob);
+            }
+          }
+          continue;
+        }
+      }
+
+      const newJob = await this.createJob(item);
+      created.push(newJob);
+      existingJobs.push(newJob);
+    }
+
+    return {
+      created,
+      updated,
+      skippedDuplicates,
+      duplicateTitles: [...new Set(duplicateTitles)],
+      totalProcessed: jobsList.length,
+    };
+  }
+
+  async deduplicateExistingJobs(): Promise<{
+    removedCount: number;
+    remainingCount: number;
+    removedJobs: { id: number; title: string; company: string }[];
+  }> {
+    const allJobs = await this.getAllJobs();
+    const seen: Job[] = [];
+    const toDelete: Job[] = [];
+
+    for (const job of allJobs) {
+      const match = seen.find((s) => isJobDuplicate(s, job));
+      if (match) {
+        // Merge missing data into the retained record
+        const updateData: any = {};
+        let needsUpdate = false;
+        if (!match.salary && job.salary) {
+          updateData.salary = job.salary;
+          needsUpdate = true;
+        }
+        if (!match.employmentType && (job.employmentType || job.employment_type)) {
+          updateData.employmentType = job.employmentType || job.employment_type;
+          needsUpdate = true;
+        }
+        if (
+          (!match.highlights || match.highlights.length === 0) &&
+          job.highlights &&
+          job.highlights.length > 0
+        ) {
+          updateData.highlights = job.highlights;
+          needsUpdate = true;
+        }
+        if ((!match.url || match.url === '#' || match.url === 'https://') && job.url && job.url !== '#') {
+          updateData.url = job.url;
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
+          await this.updateJob(match.id, updateData);
+          Object.assign(match, updateData);
+        }
+        toDelete.push(job);
+      } else {
+        seen.push(job);
+      }
+    }
+
+    for (const dup of toDelete) {
+      await this.deleteJob(dup.id);
+    }
+
+    return {
+      removedCount: toDelete.length,
+      remainingCount: seen.length,
+      removedJobs: toDelete.map((j) => ({ id: j.id, title: j.jobTitle, company: j.company })),
+    };
+  }
+
   async updateJob(id: number, params: any): Promise<Job> {
+    const jobTitle = params.jobTitle || params.title;
+    const area = params.area !== undefined ? params.area : params.location;
+    const employmentType = params.employmentType !== undefined ? params.employmentType : params.employment_type;
+
     if (isMySqlConnected) {
       const job = await JobModel.findByPk(id);
       if (!job) throw new Error('Job advert not found');
 
       const updateData: any = {};
-      if (params.jobTitle) updateData.jobTitle = params.jobTitle;
+      if (jobTitle) updateData.jobTitle = jobTitle;
       if (params.advertDate) updateData.advertDate = params.advertDate;
       if (params.company) updateData.company = params.company;
       if (params.url) updateData.url = params.url;
-      if (params.area !== undefined) updateData.area = params.area;
+      if (area !== undefined) updateData.area = area;
+      if (params.salary !== undefined) updateData.salary = params.salary;
+      if (employmentType !== undefined) updateData.employmentType = employmentType;
+      if (params.highlights !== undefined) updateData.highlights = params.highlights;
 
       await job.update(updateData);
       return job.toJSON() as Job;
@@ -774,11 +995,17 @@ class DataStore {
     const job = this.jobsMemory.find((j) => j.id === id);
     if (!job) throw new Error('Job advert not found');
 
-    if (params.jobTitle) job.jobTitle = params.jobTitle;
+    if (jobTitle) job.jobTitle = jobTitle;
     if (params.advertDate) job.advertDate = params.advertDate;
     if (params.company) job.company = params.company;
     if (params.url) job.url = params.url;
-    if (params.area !== undefined) job.area = params.area;
+    if (area !== undefined) job.area = area;
+    if (params.salary !== undefined) job.salary = params.salary;
+    if (employmentType !== undefined) {
+      job.employmentType = employmentType;
+      job.employment_type = employmentType;
+    }
+    if (params.highlights !== undefined) job.highlights = params.highlights;
     job.updatedAt = new Date().toISOString();
 
     return job;
