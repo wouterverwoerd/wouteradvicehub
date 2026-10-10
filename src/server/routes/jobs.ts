@@ -17,8 +17,69 @@ function validateRequest(req: Request, res: Response, next: NextFunction, schema
 // routes
 router.get('/', async (req, res, next) => {
   try {
-    const jobs = await store.getAllJobs();
-    res.json(jobs);
+    const dbJobs = await store.getAllJobs();
+    const formattedDbJobs = dbJobs.map((job) => ({
+      ...job,
+      source: (job.source || 'database') as 'database' | 'external',
+      isExternal: job.isExternal ?? false,
+    }));
+
+    let externalJobs: any[] = [];
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout for cold start
+
+      const extRes = await fetch('https://wouteradvicenode.onrender.com/jobs', {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (extRes.ok) {
+        const raw = await extRes.json();
+        const items = Array.isArray(raw) ? raw : Array.isArray(raw?.jobs) ? raw.jobs : [];
+        
+        externalJobs = items
+          .map((item: any, idx: number) => {
+            if (!item || typeof item !== 'object') return null;
+            return {
+              id: item.id ? (typeof item.id === 'number' ? item.id : parseInt(item.id, 10) || 2000 + idx) : 2000 + idx,
+              jobTitle: item.jobTitle || item.title || 'Untitled Role',
+              advertDate: item.advertDate || item.date || item.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+              company: item.company || 'Unknown Company',
+              url: item.url || '#',
+              area: item.area || item.location || 'New Zealand',
+              salary: item.salary || null,
+              employmentType: item.employmentType || item.employment_type || null,
+              employment_type: item.employmentType || item.employment_type || null,
+              highlights: Array.isArray(item.highlights) ? item.highlights : null,
+              source: 'external' as const,
+              isExternal: true,
+              createdAt: item.createdAt || new Date().toISOString(),
+              updatedAt: item.updatedAt || new Date().toISOString(),
+            };
+          })
+          .filter(Boolean);
+      }
+    } catch (extErr: any) {
+      console.warn('[External Jobs Fetch Notice from wouteradvicenode]', extErr.message || extErr);
+    }
+
+    if (externalJobs.length === 0) {
+      // When remote endpoint returns empty [] or is unreachable, serve database/seeded jobs
+      return res.json(formattedDbJobs);
+    }
+
+    // Merge external jobs with database jobs, filtering out duplicates
+    const combined: any[] = [...formattedDbJobs];
+    for (const extJob of externalJobs) {
+      const isDup = combined.some((existing) => isJobDuplicate(extJob, existing));
+      if (!isDup) {
+        combined.push(extJob);
+      }
+    }
+
+    res.json(combined);
   } catch (err) {
     next(err);
   }
@@ -61,6 +122,48 @@ router.post('/import', async (req: Request, res: Response, next: NextFunction) =
       message += ` and enriched ${result.updated.length} existing job${result.updated.length === 1 ? '' : 's'}`;
     }
 
+    // Synchronize unique imported jobs with wouteradvicenode.onrender.com
+    let remoteSyncCount = 0;
+    if (result.created.length > 0) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
+        const remoteRes = await fetch('https://wouteradvicenode.onrender.com/jobs/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            jobs: result.created.map((j) => ({
+              jobTitle: j.jobTitle,
+              company: j.company,
+              advertDate: j.advertDate,
+              url: j.url || '#',
+              area: j.area || 'New Zealand',
+              salary: j.salary || null,
+              employmentType: j.employmentType || null,
+              highlights: j.highlights || [],
+            })),
+            deduplicate: true,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (remoteRes.ok) {
+          const remoteJson = await remoteRes.json();
+          remoteSyncCount = remoteJson.createdCount ?? remoteJson.count ?? result.created.length;
+        }
+      } catch (remoteImportErr: any) {
+        console.warn('[Remote Import Sync Notice (local database preserved)]', remoteImportErr.message || remoteImportErr);
+      }
+    }
+
+    if (remoteSyncCount > 0) {
+      message += ` (synced ${remoteSyncCount} to wouteradvicenode.onrender.com)`;
+    }
+
     res.json({
       message,
       count: result.created.length,
@@ -69,6 +172,8 @@ router.post('/import', async (req: Request, res: Response, next: NextFunction) =
       updatedCount: result.updated.length,
       totalProcessed: result.totalProcessed,
       duplicateTitles: result.duplicateTitles,
+      remoteSyncCount,
+      targetServer: 'https://wouteradvicenode.onrender.com',
       jobs: result.created,
     });
   } catch (err: any) {
@@ -144,8 +249,67 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
           });
         }
 
-    const created = await store.createJob(req.body);
-    res.json({ message: 'Job advert created', job: created });
+        // Preference given to remote API at https://wouteradvicenode.onrender.com
+        let remoteJob: any = null;
+        let remoteSynced = false;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          const remotePayload = {
+            jobTitle: req.body.jobTitle || req.body.title,
+            company: req.body.company,
+            advertDate: req.body.advertDate,
+            url: req.body.url || '#',
+            area: req.body.area || req.body.location || 'New Zealand',
+            salary: req.body.salary || null,
+            employmentType: req.body.employmentType || req.body.employment_type || null,
+            highlights: Array.isArray(req.body.highlights) ? req.body.highlights : [],
+          };
+
+          const remoteRes = await fetch('https://wouteradvicenode.onrender.com/jobs', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify(remotePayload),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          if (remoteRes.ok) {
+            const remoteData = await remoteRes.json();
+            remoteJob = remoteData.job || remoteData;
+            remoteSynced = true;
+          } else {
+            const errText = await remoteRes.text().catch(() => '');
+            console.warn('[Remote Job Create Warning]', remoteRes.status, errText);
+          }
+        } catch (remoteErr: any) {
+          console.warn('[Remote Job Create Error (falling back to local)]', remoteErr.message || remoteErr);
+        }
+
+        // Store locally as well for offline resilience, persistence & fast retrieval
+        const localPayload = {
+          ...req.body,
+          ...(remoteJob?.id ? { id: remoteJob.id } : {}),
+          source: remoteSynced ? 'external' : 'database',
+          isExternal: remoteSynced,
+        };
+        const created = await store.createJob(localPayload);
+
+        res.json({
+          message: remoteSynced
+            ? 'Job advert created successfully on wouteradvicenode.onrender.com (and synced locally)'
+            : 'Job advert created in local database',
+          job: {
+            ...created,
+            source: remoteSynced ? 'external' : 'database',
+            isExternal: remoteSynced,
+          },
+          remoteSynced,
+          targetServer: 'https://wouteradvicenode.onrender.com',
+        });
   } catch (err: any) {
     res.status(400).json({ message: err.message || err });
   }

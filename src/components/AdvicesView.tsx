@@ -145,9 +145,21 @@ export const AdvicesView: React.FC<AdvicesViewProps> = ({ advices, users, onRefr
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
                     Advice #{advice.id}
                   </span>
+                    {advice.isExternal ? (
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>wouteradvicenode</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        <span>Local DB</span>
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => handleOpenEditModal(advice)}
@@ -202,9 +214,15 @@ export const AdvicesView: React.FC<AdvicesViewProps> = ({ advices, users, onRefr
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div>
               <h3 className="text-lg font-bold text-slate-900">
                 {editingAdvice ? `Edit Advice #${editingAdvice.id}` : 'Create New Advice'}
               </h3>
+                <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Target Preference: <strong>https://wouteradvicenode.onrender.com</strong> (live sync with local fallback)</span>
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"

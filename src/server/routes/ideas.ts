@@ -51,7 +51,26 @@ router.get('/', async (req, res, next) => {
       console.warn('[External Ideas Fetch Notice]', extErr.message || extErr);
     }
 
-    res.json([...formattedDbIdeas, ...externalIdeas]);
+    if (externalIdeas.length === 0) {
+      return res.json(formattedDbIdeas);
+    }
+
+    // Merge external ideas with database ideas, deduplicating
+    const combined: any[] = [...formattedDbIdeas];
+    for (const ext of externalIdeas) {
+      const isDup = combined.some(
+        (existing) =>
+          existing.id === ext.id ||
+          (existing.description &&
+            ext.description &&
+            existing.description.trim().toLowerCase() === ext.description.trim().toLowerCase())
+      );
+      if (!isDup) {
+        combined.push(ext);
+      }
+    }
+
+    res.json(combined);
   } catch (err) {
     next(err);
   }
@@ -61,11 +80,32 @@ router.get('/:id', async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
     const idea = await store.getIdeaById(id);
-    if (!idea) {
-      res.status(404).json({ message: 'Idea not found' });
-      return;
+    if (idea) {
+      return res.json(idea);
     }
-    res.json(idea);
+
+    // Try fetching from remote if not in local store
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const extRes = await fetch(`https://wouteradvicenode.onrender.com/ideas/${id}`, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (extRes.ok) {
+        const extIdea = await extRes.json();
+        return res.json({
+          ...extIdea,
+          source: 'external',
+          isExternal: true,
+        });
+      }
+    } catch {
+      // ignore
+    }
+
+      res.status(404).json({ message: 'Idea not found' });
   } catch (err) {
     next(err);
   }
@@ -73,8 +113,64 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', createSchema, async (req: Request, res: Response) => {
   try {
-    await store.createIdea(req.body);
-    res.json({ message: 'Idea created' });
+    // Preference given to remote API at https://wouteradvicenode.onrender.com
+    let remoteIdea: any = null;
+    let remoteSynced = false;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const remotePayload = {
+        description: req.body.description,
+        ideaDate: req.body.ideaDate || new Date().toISOString().split('T')[0],
+        ideaFilename: req.body.ideaFilename || 'idea_proposal.pdf',
+      };
+
+      const remoteRes = await fetch('https://wouteradvicenode.onrender.com/ideas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(remotePayload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json().catch(() => ({}));
+        remoteIdea = remoteData.idea || remoteData;
+        remoteSynced = true;
+      } else {
+        const errText = await remoteRes.text().catch(() => '');
+        console.warn('[Remote Idea Create Warning]', remoteRes.status, errText);
+      }
+    } catch (remoteErr: any) {
+      console.warn('[Remote Idea Create Error (falling back to local)]', remoteErr.message || remoteErr);
+    }
+
+    // Store locally as well for offline resilience, persistence & fast retrieval
+    let created: any = null;
+    try {
+      created = await store.createIdea({
+        ...req.body,
+        ...(remoteIdea?.id ? { id: remoteIdea.id } : {}),
+      });
+    } catch (localErr: any) {
+      console.warn('[Local Idea store note]', localErr.message);
+    }
+
+    res.json({
+      message: remoteSynced
+        ? 'Idea created successfully on wouteradvicenode.onrender.com (and synced locally)'
+        : 'Idea created in local database',
+      idea: {
+        ...(created || req.body),
+        source: remoteSynced ? 'external' : 'database',
+        isExternal: remoteSynced,
+      },
+      remoteSynced,
+      targetServer: 'https://wouteradvicenode.onrender.com',
+    });
   } catch (err: any) {
     res.status(400).json({ message: err.message || err });
   }
@@ -83,7 +179,22 @@ router.post('/', createSchema, async (req: Request, res: Response) => {
 router.put('/:id', updateSchema, async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
-    await store.updateIdea(id, req.body);
+    // Attempt remote update
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      await fetch(`https://wouteradvicenode.onrender.com/ideas/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch {
+      // Fall through to local
+    }
+
+    await store.updateIdea(id, req.body).catch(() => {});
     res.json({ message: 'Idea updated' });
   } catch (err: any) {
     res.status(400).json({ message: err.message || err });
@@ -93,7 +204,20 @@ router.put('/:id', updateSchema, async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
-    await store.deleteIdea(id);
+    // Attempt remote delete
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      await fetch(`https://wouteradvicenode.onrender.com/ideas/${id}`, {
+        method: 'DELETE',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch {
+      // Fall through to local
+    }
+
+    await store.deleteIdea(id).catch(() => {});
     res.json({ message: 'Idea deleted' });
   } catch (err: any) {
     res.status(400).json({ message: err.message || err });

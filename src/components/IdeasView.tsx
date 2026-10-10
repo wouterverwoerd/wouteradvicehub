@@ -285,9 +285,15 @@ export const IdeasView: React.FC<IdeasViewProps> = ({ ideas, onRefresh }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div>
               <h3 className="text-lg font-bold text-slate-900">
                 {editingIdea ? `Edit Idea #${editingIdea.id}` : 'Create New Idea'}
               </h3>
+                <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Target Preference: <strong>https://wouteradvicenode.onrender.com</strong> (live sync with local fallback)</span>
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"

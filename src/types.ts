@@ -26,6 +26,8 @@ export interface Advice {
   userid: string;
   touserid: string;
   filename: string;
+  source?: 'database' | 'external';
+  isExternal?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -44,6 +46,8 @@ export interface AppEvent {
   adviceid: number | string;
   eventDate: string;
   eventFilename: string;
+  source?: 'database' | 'external';
+  isExternal?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -101,6 +105,8 @@ export interface Job {
   employmentType?: string | null;
   employment_type?: string | null;
   highlights?: string[] | null;
+  source?: 'database' | 'external';
+  isExternal?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

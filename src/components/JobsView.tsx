@@ -433,7 +433,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
         throw new Error(`Server returned status ${res.status}`);
       }
       const data = await res.json();
-      setApiStatusMsg(`Loaded ${Array.isArray(data) ? data.length : ''} latest jobs from API successfully!`);
+      const count = Array.isArray(data) ? data.length : 0;
+      setApiStatusMsg(`Loaded ${count} latest jobs from API (synced with wouteradvicenode.onrender.com/jobs)`);
       onRefresh();
       setTimeout(() => setApiStatusMsg(null), 5000);
     } catch (err: any) {
@@ -523,6 +524,13 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
       if (!res.ok) throw new Error(data.message || 'Operation failed');
 
       setIsModalOpen(false);
+      setApiStatusMsg(
+        data.message ||
+          (data.remoteSynced
+            ? `Job published to https://wouteradvicenode.onrender.com and synced locally!`
+            : 'Job advert saved successfully!')
+      );
+      setTimeout(() => setApiStatusMsg(null), 6000);
       onRefresh();
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to save job advert');
@@ -651,9 +659,23 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
               </button>
             )}
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-xs text-slate-500">
             Manage listings, import jobs from JSON, and inspect salary, location, and key highlights.
           </p>
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/80">
+              <Globe className="w-3 h-3 text-indigo-500" />
+              <span>Live API Feed:</span>
+              <a
+                href="https://wouteradvicenode.onrender.com/jobs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline font-mono text-indigo-600"
+              >
+                wouteradvicenode.onrender.com/jobs
+              </a>
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
@@ -1133,9 +1155,15 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div>
               <h3 className="text-lg font-bold text-slate-900">
                 {editingJob ? `Edit Job Advert #${editingJob.id}` : 'Create New Job Advert'}
               </h3>
+                <p className="text-[11px] text-indigo-700 flex items-center gap-1 mt-0.5">
+                  <Globe className="w-3 h-3 text-indigo-500" />
+                  <span>Preference target: <strong className="font-mono">wouteradvicenode.onrender.com</strong></span>
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
