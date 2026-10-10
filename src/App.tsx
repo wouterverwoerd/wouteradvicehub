@@ -11,7 +11,38 @@ import { ApiExplorer } from './components/ApiExplorer';
 import { User, Advice, AppEvent, Idea, Job, CombinedAdviceEvent } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const getInitialTab = (): string => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace(/^#/, '').toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab')?.toLowerCase();
+      const validTabs = ['dashboard', 'advices', 'events', 'ideas', 'jobs', 'wordpress', 'blog', 'users', 'api-explorer'];
+      if (tabParam && validTabs.includes(tabParam)) return tabParam;
+      if (hash && validTabs.includes(hash)) return hash;
+    }
+    return 'dashboard';
+  };
+
+  const [activeTab, setActiveTabState] = useState<string>(getInitialTab);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    if (typeof window !== 'undefined') {
+      window.location.hash = tab === 'dashboard' ? '' : tab;
+    }
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#/, '').toLowerCase();
+      const validTabs = ['dashboard', 'advices', 'events', 'ideas', 'jobs', 'wordpress', 'blog', 'users', 'api-explorer'];
+      if (hash && validTabs.includes(hash)) {
+        setActiveTabState(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
   const [users, setUsers] = useState<User[]>([]);
   const [advices, setAdvices] = useState<Advice[]>([]);
   const [events, setEvents] = useState<AppEvent[]>([]);

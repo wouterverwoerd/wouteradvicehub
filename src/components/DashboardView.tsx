@@ -97,6 +97,14 @@ export const DashboardView: React.FC<DashboardProps> = ({
 
           <div className="flex flex-wrap gap-3">
             <button
+              id="dash-explore-jobs"
+              onClick={() => setActiveTab('jobs')}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-md shadow-indigo-600/25"
+            >
+              <Briefcase className="w-4 h-4" />
+              <span>Job Adverts & Import JSON</span>
+            </button>
+            <button
               id="dash-explore-combined"
               onClick={() => setActiveTab('events')}
               className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-all border border-slate-700"
