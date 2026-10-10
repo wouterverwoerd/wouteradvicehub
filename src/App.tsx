@@ -57,12 +57,12 @@ export default function App() {
     setError(null);
     try {
       const [resUsers, resAdvices, resEvents, resIdeas, resJobs, resCombined] = await Promise.all([
-        fetch('/users'),
-        fetch('/advices'),
-        fetch('/events'),
-        fetch('/ideas'),
-        fetch('/jobs'),
-        fetch('/events/combined'),
+        fetch('/api/users').catch(() => fetch('/users')),
+        fetch('/api/advices').catch(() => fetch('/advices')),
+        fetch('/api/events').catch(() => fetch('/events')),
+        fetch('/api/ideas').catch(() => fetch('/ideas')),
+        fetch('/api/jobs').catch(() => fetch('/jobs')),
+        fetch('/api/events/combined').catch(() => fetch('/events/combined')),
       ]);
 
       if (!resUsers.ok || !resAdvices.ok || !resEvents.ok || !resIdeas.ok || !resJobs.ok || !resCombined.ok) {
@@ -93,6 +93,23 @@ export default function App() {
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  // When switching to the Jobs tab, automatically fetch latest jobs from the API
+  useEffect(() => {
+    if (activeTab === 'jobs') {
+      fetch('/api/jobs')
+        .then((res) => (res.ok ? res : fetch('/jobs')))
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setJobs(data);
+          }
+        })
+        .catch((err) => {
+          console.warn('Background jobs fetch warning:', err);
+        });
+    }
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans flex flex-col">

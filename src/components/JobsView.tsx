@@ -22,10 +22,13 @@ import {
   FileSpreadsheet,
   ShieldCheck,
   CopyX,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { Job } from '../types';
 import { JobsMap } from './JobsMap';
 import { ExportSheetsModal } from './ExportSheetsModal';
+import { exportJobsToCSV } from '../utils/csvExport';
 
 interface JobsViewProps {
   jobs: Job[];
@@ -259,6 +262,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
   const [updateExistingOption, setUpdateExistingOption] = useState(false);
   const [isDeduplicatingBoard, setIsDeduplicatingBoard] = useState(false);
   const [boardDeduplicateSuccess, setBoardDeduplicateSuccess] = useState<string | null>(null);
+  const [isRefreshingJobs, setIsRefreshingJobs] = useState(false);
+  const [apiStatusMsg, setApiStatusMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     jobTitle: '',
@@ -413,6 +418,29 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
       alert(err.message || 'Failed to deduplicate jobs');
     } finally {
       setIsDeduplicatingBoard(false);
+    }
+  };
+
+  const handleReloadFromApi = async () => {
+    setIsRefreshingJobs(true);
+    setApiStatusMsg(null);
+    try {
+      let res = await fetch('/api/jobs');
+      if (!res.ok) {
+        res = await fetch('/jobs');
+      }
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`);
+      }
+      const data = await res.json();
+      setApiStatusMsg(`Loaded ${Array.isArray(data) ? data.length : ''} latest jobs from API successfully!`);
+      onRefresh();
+      setTimeout(() => setApiStatusMsg(null), 5000);
+    } catch (err: any) {
+      setApiStatusMsg(`Failed to reload jobs from API: ${err.message || 'Network error'}`);
+      setTimeout(() => setApiStatusMsg(null), 6000);
+    } finally {
+      setIsRefreshingJobs(false);
     }
   };
 
@@ -640,6 +668,18 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
             />
           </div>
 
+          {/* Load Latest Jobs from API Button */}
+          <button
+            id="reload-jobs-api-btn"
+            onClick={handleReloadFromApi}
+            disabled={isRefreshingJobs}
+            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-xs sm:text-sm rounded-xl border border-indigo-200/80 transition-all shadow-sm whitespace-nowrap disabled:opacity-50"
+            title="Fetch and reload latest jobs from API"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshingJobs ? 'animate-spin text-indigo-600' : 'text-indigo-600'}`} />
+            <span>{isRefreshingJobs ? 'Loading...' : 'Load from API'}</span>
+          </button>
+
           {/* Import JSON Button */}
           <button
             id="import-jobs-json-btn"
@@ -662,6 +702,20 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
             <span>Export to Google Sheets</span>
           </button>
 
+          {/* Quick Download CSV Button */}
+          <button
+            id="download-jobs-csv-btn"
+            onClick={() => {
+              const exportList = filteredJobs.length > 0 ? filteredJobs : jobs;
+              exportJobsToCSV(exportList, `jobs_export_${new Date().toISOString().slice(0, 10)}.csv`);
+            }}
+            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs sm:text-sm rounded-xl border border-slate-200 transition-all shadow-sm whitespace-nowrap"
+            title="Download jobs as a CSV file (zero login or setup required)"
+          >
+            <Download className="w-4 h-4 text-slate-600" />
+            <span>Download CSV</span>
+          </button>
+
           {/* New Job Advert Button */}
           <button
             id="add-job-btn"
@@ -673,6 +727,22 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
           </button>
         </div>
       </div>
+
+      {/* API Sync Notification Banner */}
+      {apiStatusMsg && (
+        <div className="mb-4 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium rounded-xl flex items-center justify-between shadow-sm">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{apiStatusMsg}</span>
+          </div>
+          <button
+            onClick={() => setApiStatusMsg(null)}
+            className="text-emerald-600 hover:text-emerald-800 ml-2"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Jobs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -811,8 +881,18 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
             <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-600 font-medium text-sm">No job adverts found.</p>
             <p className="text-xs text-slate-400 mt-1">
-              Try clearing search, reset area filters, or click &ldquo;Import JSON&rdquo; to add listings.
+              Try clearing search, resetting filters, or load latest jobs directly from the API.
             </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                onClick={handleReloadFromApi}
+                disabled={isRefreshingJobs}
+                className="inline-flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs sm:text-sm rounded-xl transition-all shadow-sm disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshingJobs ? 'animate-spin' : ''}`} />
+                <span>{isRefreshingJobs ? 'Loading...' : 'Load Latest Jobs from API'}</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -51,12 +51,19 @@ async function startServer() {
     });
   });
 
+  // Mount both standard routes and /api prefixed routes
   app.use('/users', usersRouter);
+  app.use('/api/users', usersRouter);
   app.use('/advices', advicesRouter);
+  app.use('/api/advices', advicesRouter);
   app.use('/events', eventsRouter);
+  app.use('/api/events', eventsRouter);
   app.use('/ideas', ideasRouter);
+  app.use('/api/ideas', ideasRouter);
   app.use('/jobs', jobsRouter);
+  app.use('/api/jobs', jobsRouter);
   app.use('/wordpress', wordpressRouter);
+  app.use('/api/wordpress', wordpressRouter);
 
   // Global Error Handler
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
